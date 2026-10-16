@@ -1,0 +1,39 @@
+# Nothing that belongs to the game ever goes in here.
+
+# ROMs and dumps
+*.z64
+*.n64
+*.v64
+*.rom
+
+# build output
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.appx
+*.msix
+build-*/
+src/
+
+# signing certificates: yours is yours
+*.pfx
+*.p12
+*.cer
+
+# saves and logs
+*.mpk
+*.sav
+*.log
+
+# Python / editors / OS
+__pycache__/
+*.py[cod]
+.vs/
+.vscode/
+*.swp
+*.tmp
+Thumbs.db
+desktop.ini
+.DS_Store

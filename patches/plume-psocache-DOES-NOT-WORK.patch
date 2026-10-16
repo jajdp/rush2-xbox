@@ -1,0 +1,130 @@
+diff --git a/plume_d3d12.cpp b/plume_d3d12.cpp
+index 358c206..ce4044f 100644
+--- a/plume_d3d12.cpp
++++ b/plume_d3d12.cpp
+@@ -9,6 +9,65 @@
+ 
+ #include <unordered_set>
+ 
++#ifdef _UWP
++#include <cstdio>
++#include <cstring>
++#include <string>
++#include <vector>
++
++// La carpeta de datos del juego, que rellena el envoltorio al arrancar (uwp/main.cpp).
++extern "C" char rush2_ruta_datos[512];
++
++namespace {
++    // Clave de un pipeline: sus dos bytecodes y los estados fijos con los que se construye.
++    // No hace falta un hash criptografico, solo que dos pipelines distintos no caigan en el
++    // mismo archivo; el driver ademas valida el blob antes de usarlo.
++    uint64_t rush2ClavePSO(const D3D12_GRAPHICS_PIPELINE_STATE_DESC &d,
++                           const std::vector<D3D12_INPUT_ELEMENT_DESC> &elementos) {
++        uint64_t h = 1469598103934665603ULL;
++        auto mezclar = [&h](const void *datos, size_t n) {
++            const uint8_t *b = static_cast<const uint8_t *>(datos);
++            for (size_t i = 0; i < n; i++) {
++                h ^= b[i];
++                h *= 1099511628211ULL;
++            }
++        };
++        if (d.VS.pShaderBytecode != nullptr) mezclar(d.VS.pShaderBytecode, d.VS.BytecodeLength);
++        if (d.PS.pShaderBytecode != nullptr) mezclar(d.PS.pShaderBytecode, d.PS.BytecodeLength);
++        if (d.GS.pShaderBytecode != nullptr) mezclar(d.GS.pShaderBytecode, d.GS.BytecodeLength);
++        mezclar(&d.BlendState, sizeof(d.BlendState));
++        mezclar(&d.SampleMask, sizeof(d.SampleMask));
++        mezclar(&d.RasterizerState, sizeof(d.RasterizerState));
++        mezclar(&d.DepthStencilState, sizeof(d.DepthStencilState));
++        mezclar(&d.PrimitiveTopologyType, sizeof(d.PrimitiveTopologyType));
++        mezclar(&d.NumRenderTargets, sizeof(d.NumRenderTargets));
++        mezclar(d.RTVFormats, sizeof(d.RTVFormats));
++        mezclar(&d.DSVFormat, sizeof(d.DSVFormat));
++        mezclar(&d.SampleDesc, sizeof(d.SampleDesc));
++        mezclar(&d.Flags, sizeof(d.Flags));
++        for (const D3D12_INPUT_ELEMENT_DESC &e : elementos) {
++            if (e.SemanticName != nullptr) mezclar(e.SemanticName, strlen(e.SemanticName));
++            mezclar(&e.SemanticIndex, sizeof(e.SemanticIndex));
++            mezclar(&e.Format, sizeof(e.Format));
++            mezclar(&e.InputSlot, sizeof(e.InputSlot));
++            mezclar(&e.AlignedByteOffset, sizeof(e.AlignedByteOffset));
++            mezclar(&e.InputSlotClass, sizeof(e.InputSlotClass));
++            mezclar(&e.InstanceDataStepRate, sizeof(e.InstanceDataStepRate));
++        }
++        return h;
++    }
++
++    std::string rush2RutaPSO(uint64_t clave) {
++        if (rush2_ruta_datos[0] == '\0') {
++            return std::string();
++        }
++        char nombre[64];
++        snprintf(nombre, sizeof(nombre), "\\psocache\\%016llx.bin", (unsigned long long)clave);
++        return std::string(rush2_ruta_datos) + nombre;
++    }
++}
++#endif
++
+ #include <dxgi1_5.h>
+ 
+ #ifdef __clang__
+@@ -3224,7 +3283,59 @@ namespace plume {
+ 
+         psoDesc.InputLayout = { inputElements.data(), UINT(inputElements.size()) };
+ 
++#   ifdef _UWP
++        // Primero el pipeline que ya se construyo en un arranque anterior: se lo pasamos al
++        // driver y se ahorra compilar el DXIL a codigo de su GPU, que es lo que cuesta los
++        // segundos (o los tres minutos de los cuatro shaders grandes).
++        const std::string rutaPSO = rush2RutaPSO(rush2ClavePSO(psoDesc, inputElements));
++        std::vector<uint8_t> blobCache;
++        if (!rutaPSO.empty()) {
++            FILE *f = fopen(rutaPSO.c_str(), "rb");
++            if (f != nullptr) {
++                fseek(f, 0, SEEK_END);
++                const long n = ftell(f);
++                fseek(f, 0, SEEK_SET);
++                if (n > 0) {
++                    blobCache.resize(size_t(n));
++                    if (fread(blobCache.data(), 1, size_t(n), f) != size_t(n)) {
++                        blobCache.clear();
++                    }
++                }
++                fclose(f);
++            }
++        }
++
++        HRESULT rush2Res = E_FAIL;
++        if (!blobCache.empty()) {
++            psoDesc.CachedPSO.pCachedBlob = blobCache.data();
++            psoDesc.CachedPSO.CachedBlobSizeInBytes = blobCache.size();
++            rush2Res = device->d3d->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&d3d));
++            if (FAILED(rush2Res)) {
++                // El driver rechaza el blob (otra version suya, otra GPU): se construye entero.
++                psoDesc.CachedPSO.pCachedBlob = nullptr;
++                psoDesc.CachedPSO.CachedBlobSizeInBytes = 0;
++                d3d = nullptr;
++            }
++        }
++
++        if (FAILED(rush2Res)) {
++            rush2Res = device->d3d->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&d3d));
++            // Y a disco, para que el arranque siguiente no lo vuelva a construir.
++            if (SUCCEEDED(rush2Res) && (d3d != nullptr) && !rutaPSO.empty()) {
++                ID3DBlob *blobNuevo = nullptr;
++                if (SUCCEEDED(d3d->GetCachedBlob(&blobNuevo)) && (blobNuevo != nullptr)) {
++                    FILE *f = fopen(rutaPSO.c_str(), "wb");
++                    if (f != nullptr) {
++                        fwrite(blobNuevo->GetBufferPointer(), 1, blobNuevo->GetBufferSize(), f);
++                        fclose(f);
++                    }
++                    blobNuevo->Release();
++                }
++            }
++        }
++#   else
+         device->d3d->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&d3d));
++#   endif
+     }
+ 
+     D3D12GraphicsPipeline::~D3D12GraphicsPipeline() {
