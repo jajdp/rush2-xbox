@@ -73,11 +73,63 @@ The port plays; what is left is worth having in front of you:
 | ✅ **It plays**: the stunt-event crash was trap 5 | |
 | ✅ The Controller Pak **loads** | The game sees the pad with its accessory but **never calls `osPfsInitPak`**, so nobody ever opened the `.mpk` in `LocalState`. It is now loaded from the draw loop as soon as the runtime has its path ready, without waiting for the game |
 | ✅ A shader list that feeds itself | With it the game went from surviving 47 s to 218 s in the stunt test, and the second entry into a track loads at once |
-| ⚠ **Minutes of loading on a first launch** | The compiled DXIL blobs are cached to disk (303 descriptions in 22 s), but four shaders need 180–190 s each for the driver to build their pipeline, and **both D3D12 ways of caching a pipeline remove the device on this console** |
+| ✅ **The launch** | **Fixed on 2026-10-18**: 5–6 minutes → **~20 s**, and no black screen before the logo. It was the **mipmap addressing modes** making RT64 emit a shader that costs ~200 s to build, plus the first frame **waiting for an ubershader pipeline nothing uses** (next section). Caching a pipeline is still impossible here — both D3D12 ways remove the device — and it turned out not to matter |
 | ✅ **The sky** | Fixed by moving to the game's v1.0.20: it was the game clipping its dome against the current frame's view, fixed upstream on 2026-10-13 |
 | ⚠ **The Controller Pak's records** | The factory ones show up, but the game still does not open the pak: whatever a save writes is not read back |
 | ⚠ Developer Mode suspension | Coming back from Home, the game starts over |
 
+
+## The launch: it was never the console
+
+Until 2026-10-18 this document said a first launch takes minutes because the driver needs 180–190 s
+to build four of the pipelines, and that there is no way to cache one on this console. The second
+half is true. The first was a symptom: the cost was in the shader being handed to the driver.
+
+**It was the mipmap addressing modes.** On the RDP it is normal for the higher mipmap levels to be
+marked CLAMP while the lower ones are WRAP — there is nothing to repeat on a two-texel level. RT64
+compares the modes of *every* level before using a native sampler:
+
+```cpp
+// rt64_state.cpp — if any level disagrees, sameModes goes false, the native sampler is dropped
+// and the shader gets a branch per sample.
+for (uint32_t t = 1; (t < callDesc.tileCount) && sameModes; t++) { … }
+```
+
+On an Xbox Series that branchy shader costs **~200 s** of pipeline creation, against **0.3 s** for
+the plain one. In this game seven of them ate **1 337 s of a 1 448 s** launch. Instrumented to say
+*which* level disagrees and *in what field*, the pattern is always the same: `fmt` and `siz` match
+everywhere and only `cms`/`cmt` of the higher levels differ. Taking level 0's mode for every level
+brings the worst shader from **262 s to 8.8 s**, and the image is identical — what is lost is the
+addressing of mipmap levels a couple of texels wide, at a distance where it cannot be seen.
+
+**And the black screen before the logo was the ubershader.** `State::fullSync()` joins the threads
+that create the ubershader's eight pipelines before rendering anything:
+
+```cpp
+// rt64_state.cpp, before drawing a workload
+ext.rasterShaderCache->shaderUber->waitForPipelineCreation();   // join() of the creation threads
+```
+
+The first of those eight costs **26.8 s** here; the other seven are free, because they share the
+bytecode and the driver reuses what it compiled (RT64 serialises the first one on purpose for
+exactly that reason). While the game thread sits in that `join` there is no workload, so there is
+no present — and with no present there is no logo, no interface and no loading bar. **That is the
+black screen.** Skipping the wait, and letting a draw call that needs the ubershader be dropped
+until it is ready, puts the first frame at **~0 s** and the game running at **~22 s** instead of
+~50. The one thing that must not be done is reading the pipeline array while its threads write it:
+the wait has to be replaced by an `std::atomic<bool>` those threads set with `release`, read with
+`acquire` before touching anything.
+
+**How to find out which pipeline is the expensive one.** Log the bytecode size next to the creation
+time — `psoDesc.PS.BytecodeLength` — and match it against the sizes of the compiled `.dxil` files.
+That is what named the 26.8 s one: `RasterPSDynamic`, 52 016 bytes, the ubershader.
+
+**And count before believing a capture.** A counter of the draw calls that fall back to the
+ubershader reads **zero** across every measured launch, the original included: with healthy
+specialised shaders nothing needs it, so those 27 seconds were spent on a pipeline that does not
+draw a triangle. The same counter corrected a wrong reading of a screenshot along the way — a dark
+scene taken for missing geometry that was simply the game's night track. **A capture says what is
+on screen, not why.**
 
 ## Moving the port to a new version of the game
 

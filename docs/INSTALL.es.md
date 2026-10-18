@@ -3,8 +3,9 @@
 *(English: [INSTALL.md](INSTALL.md))*
 
 ⚠ **Lee la primera sección del [`README.es.md`](../README.es.md) antes de invertir una tarde en
-esto.** El juego se juega a 59 FPS y el cielo está arreglado, pero un primer arranque sigue tardando
-minutos y el juego nunca abre el Controller Pak.
+esto.** El juego se juega a 59 FPS, el cielo está arreglado y un arranque tarda unos veinte
+segundos desde la 1.2.0, pero el juego nunca abre el Controller Pak y queda un residuo del fallo
+del cielo en las curvas cerradas.
 
 ## 0. Dónde se escriben las órdenes
 
@@ -51,8 +52,9 @@ falla a mitad:
 git apply --directory=<ruta de plume> patches\plume-psocache.patch
 ```
 
-Es el primer paso contra los 3-4 minutos de cada arranque. No está terminado: ver el estado en el
-README.
+Fue el primer intento contra los minutos que tardaba cada arranque, y **no funciona en esta
+consola**. El arranque se resolvió por otra vía en la 1.2.0 —ver `HOW-IT-WORKS.es.md`— y este
+parche se guarda solo como constancia del callejón sin salida.
 
 ## 4. Instalarlo en la consola
 
@@ -88,8 +90,8 @@ de rodeo, porque el driver de vídeo de WinRT cambia el directorio de trabajo al
 | No responde ningún botón | Falta `SDL_HINT_JOYSTICK_WGI` |
 | El portal no encuentra la ruta al subir la ROM | `LocalState` no existe hasta el primer arranque (§5) |
 | Se cierra a mitad de una carrera, sin mensaje | El `stderr` del contenedor es inválido y escribir en él es *fail-fast*: hace falta `_set_invalid_parameter_handler` y un archivo propio para el registro |
-| Cada arranque tarda 3-4 minutos | Conocido: RT64 recompila las tuberías en cada arranque (§3) |
-| El cielo sale negro en una pista | Conocido y sin resolver: el domo llega al display list y no al framebuffer |
+| Cada arranque tarda minutos | Resuelto en la 1.2.0 (los modos del mipmap y la espera al ubershader). Si sigue pasando, el árbol es anterior a eso |
+| El cielo sale negro en una pista | Resuelto subiendo a la v1.0.20 del juego: era del propio juego, no del port |
 
 
 ## Reinstalar: tres cosas que muerden
@@ -103,5 +105,5 @@ de rodeo, porque el driver de vídeo de WinRT cambia el directorio de trabajo al
    `Identity Version` del manifiesto antes, y anclar la expresión regular que lo hace
    (`\sVersion="…"`), porque `MinVersion` contiene `Version`.
 3. **La caché de shaders de una compilación anterior no vale.** Se borra
-   `LocalState\shadercache\` y el juego la rehace. El primer arranque siguiente tarda minutos, con
-   la barra de carga sobre el logo.
+   `LocalState\shadercache\` y el juego la rehace. El primer arranque siguiente tarda unos veinte
+   segundos, con la barra de carga sobre el logo.

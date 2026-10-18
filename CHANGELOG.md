@@ -2,6 +2,64 @@
 
 All notable changes to this repository. Dates are `YYYY-MM-DD`.
 
+## [1.2.0] — 2026-10-18
+
+**The launch stops being this port's defining problem.** Five to six minutes became **about twenty
+seconds**, and the twenty-seven seconds of black screen before the logo are gone. Neither had
+anything to do with the console being slow.
+
+### Fixed
+
+- **The launch: it was the mipmap addressing modes, not the number of shaders.** On the RDP it is
+  normal for the higher mipmap levels to be marked CLAMP while the lower ones are WRAP — there is
+  nothing to repeat on a two-texel level. RT64 compares the modes of *every* level and, when they
+  differ, drops the native sampler and emits a shader that branches per sample. On an Xbox Series
+  that shader costs **~200 s** of pipeline creation against **0.3 s** for the plain one: seven of
+  them ate **1 337 s of a 1 448 s** launch. Taking level 0's mode for every level brings the worst
+  shader from **262 s to 8.8 s**, and the image is identical.
+- **The 27 seconds of black screen: the first frame was waiting for the ubershader.**
+  `State::fullSync()` joins the threads that create the ubershader's eight pipelines before
+  rendering anything. The first of those eight costs **26.8 s** on this console — the other seven
+  are free, same bytecode, the driver reuses it — and while the game thread sits in that `join`
+  there is no workload, no present, and therefore no logo and no loading bar. Not waiting, and
+  letting a draw call that needs it be skipped until it is ready, puts the first frame at **~0 s**
+  and the game running at **~22 s** instead of ~50.
+- ⚠ **And the ubershader is never used.** A counter of the draw calls that fall back to it reads
+  **zero** across every measured launch, the original included: once the specialised shaders are
+  healthy, nothing needs it. Twenty-seven seconds were being spent on a pipeline that does not draw
+  a single triangle.
+
+### Changed
+
+- **The `README` and `docs/HOW-IT-WORKS` no longer claim the launch time is a console limit.** That
+  was the conclusion after measuring, and it was wrong. The wrong line is called out instead of
+  quietly deleted: the measurements behind it were sound, and the conclusion still did not follow.
+- **Compile threads: from `threadsAvailable - 2` (6 here) to 12.** Worth another 24 s on this
+  console, and read from a file in `LocalState` so it can be changed without rebuilding.
+- **The ubershader's emulated culling on UWP is removed.** Neither orientation was right — one lost
+  building fronts, the inverted one lost the stunt arena — and with the ubershader out of the
+  startup path it is not worth emulating.
+
+### Added
+
+- **How to find out which pipeline is the expensive one.** Log `psoDesc.PS.BytecodeLength` next to
+  the creation time and match it against the sizes of the compiled `.dxil` files. That is what put
+  a name on the 26.8 s one: `RasterPSDynamic`, 52 016 bytes.
+- **How to show something while the shaders compile.** The only place drawn before there are
+  pipelines is the frontend's present hook, and the only tool available there is `clearColor` over
+  rectangles — no textures, no fonts. Enough for a progress bar, a seven-segment percentage and a
+  5 × 9 rectangle font for the label beside it.
+- **Two traps that each cost a measurement.** `LocalState\shaders.txt` **freezes the flags**, so a
+  change in how descriptions are generated does not show until that list is deleted; and
+  **contention nearly triples the cost per shader** — the same shader took 262 s with 232 compiling
+  at once and 98 s when they were asked for a few at a time.
+
+### Not included, on purpose
+
+- **No patch files for RT64.** The two fixes are described line by line in `docs/HOW-IT-WORKS`, but
+  the tree they come from carries instrumentation, local paths and this game's own hacks, and a
+  patch saved by hand ages in silence — this repository already learned that once.
+
 ## [1.1.1] — 2026-10-16
 
 ### Fixed

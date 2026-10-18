@@ -15,13 +15,16 @@ game's own and is gone since this port moved to **v1.0.20**. Measured on an Xbox
 |---|---|
 | ✅ Boots, draws and takes controller input | Yes, from day one |
 | ✅ **It plays**, at **59 FPS** | Tested by the owner on an Xbox Series X on 2026-10-15 |
-| ✅ The sky | **Fixed.** It never was the port's: the game clipped its sky dome against the *current* frame's view, and its author fixed that upstream on 2026-10-13 (issue #16, commits `47e3465b` and `12262d0f`). This port now tracks **v1.0.20** |
-| ⚠ Every launch takes minutes | The compiled DXIL blobs are cached to disk — 303 descriptions in 22 s — but four shaders need **180–190 s each** for the driver to build their pipeline, and **neither way D3D12 offers to cache a pipeline works on this console** (see below) |
+| ⚠ The sky, almost | **Fixed upstream**, not here: the game clipped its sky dome against the *current* frame's view, and its author corrected that on 2026-10-13 (issue #16, commits `47e3465b` and `12262d0f`); this port tracks **v1.0.20**. ⚠ A remnant is left, seen on 2026-10-18: on tight curves a few light triangles with no sky show up in the **top-left corner** |
+| ✅ **Launch time** | **Fixed on 2026-10-18**: 5–6 minutes → **~20 s**, with the logo and the progress bar on screen from the first frame. Two independent causes, both written up in [`docs/HOW-IT-WORKS.md`](docs/HOW-IT-WORKS.md): the **mipmap addressing modes**, which made RT64 emit a shader costing ~200 s to build instead of 0.3 s, and the first frame **waiting for an ubershader pipeline that no draw call ever uses**. Caching a pipeline is still impossible here — both D3D12 ways remove the device — but it turned out not to matter |
 | ⚠ The Controller Pak | The game sees the pad with its accessory but never opens the pak, so whatever a save writes is not read back |
 | ⚠ The 2049 boost pads | Not implemented **in the game project**: `docs/rush2049_research/collision.md` leaves the `0x10` collision branch for a future runtime patch. They do not boost on PC either |
 
-Two of those are worth stating plainly, because they cost days: **the launch time is a console
-limit, not a missing optimisation**, and **the boost pads are missing upstream, not here**.
+**One line that used to be here was wrong, and it is worth saying so.** Until 2026-10-18 this
+README stated that *the launch time is a console limit, not a missing optimisation*. It was
+not: it was a shader RT64 should never have generated, plus a pipeline nobody uses. The
+measurements behind that claim were sound; the conclusion drawn from them was not. What does
+still hold: **the boost pads are missing upstream, not here**.
 
 ## What this repository is
 

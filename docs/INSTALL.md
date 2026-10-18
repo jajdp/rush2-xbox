@@ -3,8 +3,9 @@
 *(Español: [INSTALL.es.md](INSTALL.es.md))*
 
 ⚠ **Read the first section of the [`README.md`](../README.md) before spending an evening on
-this.** The game plays at 59 FPS and the sky is fixed, but a first launch still takes minutes and
-the game never opens the Controller Pak.
+this.** The game plays at 59 FPS, the sky is fixed and a launch takes about twenty seconds since
+1.2.0, but the game never opens the Controller Pak and a remnant of the sky fault is left on
+tight curves.
 
 ## 0. Where the commands go
 
@@ -51,8 +52,9 @@ fails halfway:
 git apply --directory=<path to plume> patches\plume-psocache.patch
 ```
 
-It is the first step against the 3–4 minutes every launch takes. It is not finished: see the state
-in the README.
+It was the first attempt against the minutes every launch used to take, and it **does not work
+on this console**. The launch was fixed another way in 1.2.0 — see `HOW-IT-WORKS` — and this
+patch is kept only as a record of the dead end.
 
 ## 4. Installing it on the console
 
@@ -88,8 +90,8 @@ around it, because WinRT's video driver changes the working directory to the ins
 | No button responds | `SDL_HINT_JOYSTICK_WGI` is missing |
 | The portal cannot find the path when uploading the ROM | `LocalState` does not exist until the first launch (§5) |
 | Exits mid-race with no message | The container's `stderr` is invalid and writing to it is a fail-fast: it needs `_set_invalid_parameter_handler` and a file of its own for the log |
-| Every launch takes 3–4 minutes | Known: RT64 recompiles the pipelines every launch (§3) |
-| The sky is black on a track | Known and unsolved: the dome reaches the display list and not the framebuffer |
+| Every launch takes minutes | Fixed in 1.2.0 (the mipmap addressing modes and the wait for the ubershader). If you still see it, the tree is older than that |
+| The sky is black on a track | Fixed by moving to the game's v1.0.20: it was the game's own, not the port's |
 
 
 ## Reinstalling: three things that bite
@@ -103,4 +105,5 @@ around it, because WinRT's video driver changes the working directory to the ins
    manifest's `Identity Version` first, and anchor the regular expression that does it
    (`\sVersion="…"`), because `MinVersion` contains `Version`.
 3. **A shader cache written by an older build is no good.** Delete `LocalState\shadercache\`; the
-   game rebuilds it. The first launch afterwards takes minutes, with the loading bar over the logo.
+   game rebuilds it. The first launch afterwards takes about twenty seconds, with the loading bar
+   over the logo.
