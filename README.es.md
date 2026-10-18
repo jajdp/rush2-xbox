@@ -18,13 +18,15 @@ propio juego y desapareció al subir este port a la **v1.0.20**. Medido en una X
 | ⚠ El cielo, casi | **Arreglado aguas arriba**, no aquí: el juego recortaba su domo contra la vista del fotograma *actual*, y su autor lo corrigió el 2026-10-13 (issue #16, commits `47e3465b` y `12262d0f`); este port va sobre la **v1.0.20**. ⚠ Queda un residuo, visto el 2026-10-18: en las curvas cerradas salen unos triángulos claros sin cielo en la **esquina superior izquierda** |
 | ✅ **El tiempo de arranque** | **Resuelto el 2026-10-18**: de 5-6 minutos a **unos 20 s**, con el logo y la barra de progreso en pantalla desde el primer fotograma. Dos causas independientes, las dos contadas en [`docs/HOW-IT-WORKS.es.md`](docs/HOW-IT-WORKS.es.md): los **modos de direccionamiento del mipmap**, que hacían a RT64 generar un shader de ~200 s de creación en vez de 0,3 s, y el primer fotograma **esperando a una tubería del ubershader que ninguna llamada de dibujo usa**. Cachear una tubería sigue siendo imposible aquí —las dos vías de D3D12 matan el dispositivo—, pero resultó no hacer falta |
 | ⚠ El Controller Pak | El juego ve el mando con su accesorio pero nunca abre el pak, así que lo que se guarde en una partida no se lee |
-| ⚠ Las plataformas de aceleración de 2049 | No están implementadas **en el proyecto del juego**: `docs/rush2049_research/collision.md` deja la rama de colisión `0x10` para un parche futuro. En PC tampoco aceleran |
+| ⚠ Las plataformas de aceleración de 2049, **solo en los modos Stunt** | Reportado por el dueño el 2026-10-18: se portan mal en **STUNT** y no en **SINGLE RACE** ni en **CIRCUIT**. La causa **no está decidida**. Aguas arriba queda pendiente la rama de colisión `0x10` de `func_800E1F80` (`docs/rush2049_research/collision.md`), pero esa rama es la que empuja el coche en *cualquier* modo, y el mismo documento cuenta polígonos `0x10` también en pistas de carrera —78 en la pista 2, 3 en la 3, 4 en la 5, más arenas y el circuito de obstáculos—. Si faltara la rama, no empujaría ninguna en ningún sitio, así que eso solo no explica un fallo exclusivo de Stunt. Es el issue #3 |
 
 **Una línea que estaba aquí era falsa, y conviene decirlo.** Hasta el 2026-10-18 este README
 afirmaba que *el tiempo de arranque es un límite de la consola, no una optimización pendiente*.
 No lo era: era un shader que RT64 no debería haber generado, más una tubería que no usa nadie.
 Las medidas que había detrás eran buenas; la conclusión que se sacó de ellas, no. Lo que sí
-sigue en pie: **las plataformas de aceleración faltan aguas arriba, no aquí**.
+sigue en pie: **las plataformas de aceleración no son culpa de la consola** —la física que
+empujaría el coche es el mismo código en PC—. Aunque de *dónde* fallan también se afirmó más de
+lo que sostenía la evidencia, y eso queda corregido arriba.
 
 ## Qué es este repositorio
 

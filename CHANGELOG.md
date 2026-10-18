@@ -2,6 +2,24 @@
 
 All notable changes to this repository. Dates are `YYYY-MM-DD`.
 
+## [1.2.1] — 2026-10-18
+
+**Documentation only.** Nothing to rebuild, nothing to reinstall.
+
+### Changed
+
+- **The boost-pad fault happens in Stunt events only, and the explanation published here did not
+  cover that.** The owner, playing on the console, reports that the 2049 acceleration platforms
+  misbehave in **STUNT** and not in **SINGLE RACE** or **CIRCUIT**. Until now this repository gave
+  the cause as upstream's unported `0x10` collision branch (`func_800E1F80`) — but that branch
+  is what pushes the car in any mode, and `collision.md` counts `0x10` polygons on race tracks too
+  (78 on track 2, 3 on track 3, 4 on track 5, besides the arenas and the obstacle course). A branch
+  that is simply missing would fail everywhere. So the observation stands, the cause goes back to
+  **not known**, and issue #3 now carries both: where it happens, and the test that would tell the
+  two readings apart — drive a 2049 **race** track that has pads and watch whether they push.
+- This is the second claim in this repository to be walked back in two days, and for the same
+  reason both times: a measurement, or a report, was turned into a cause without a test in between.
+
 ## [1.2.0] — 2026-10-18
 
 **The launch stops being this port's defining problem.** Five to six minutes became **about twenty
