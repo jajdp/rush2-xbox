@@ -2,6 +2,18 @@
 
 All notable changes to this repository. Dates are `YYYY-MM-DD`.
 
+## [1.2.2] — 2026-10-20
+
+### Changed
+
+- **`tools/compilar.ps1` no longer defaults to a path on the author's disk.** `-Arbol` was
+  `F:\rush2-uwp` by default, which is where the work tree lives on the machine this was written on;
+  it is now a required parameter, like every other path this repository takes.
+- **The README now says which console this was tested on, and which one it was not.** Everything here
+  was built and measured on an **Xbox Series X** in Developer Mode; a **Series S has never been tried**,
+  so nothing here says anything about one. The wording used to say "Xbox Series", which reads as if it
+  covered both, and it does not.
+
 ## [1.2.1] — 2026-10-18
 
 **Documentation only.** Nothing to rebuild, nothing to reinstall.
@@ -31,7 +43,7 @@ anything to do with the console being slow.
 - **The launch: it was the mipmap addressing modes, not the number of shaders.** On the RDP it is
   normal for the higher mipmap levels to be marked CLAMP while the lower ones are WRAP — there is
   nothing to repeat on a two-texel level. RT64 compares the modes of *every* level and, when they
-  differ, drops the native sampler and emits a shader that branches per sample. On an Xbox Series
+  differ, drops the native sampler and emits a shader that branches per sample. On an Xbox Series X
   that shader costs **~200 s** of pipeline creation against **0.3 s** for the plain one: seven of
   them ate **1 337 s of a 1 448 s** launch. Taking level 0's mode for every level brings the worst
   shader from **262 s to 8.8 s**, and the image is identical.

@@ -13,7 +13,7 @@
     Cada paso se salta si ya esta hecho, asi que el guion se puede repetir.
 
 .PARAMETER Arbol
-    Carpeta de trabajo. Por defecto F:\rush2-uwp (el arbol no vive en el proyecto: pesa ~3 GB).
+    Carpeta de trabajo. Obligatoria: el arbol pesa ~3 GB y no vive dentro de este repositorio.
 
 .PARAMETER Rom
     ROM de Rush 2 (USA). Por defecto, la de dependencias-usuario\ del subproyecto.
@@ -28,7 +28,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Arbol = 'F:\rush2-uwp',
+    [Parameter(Mandatory)][string]$Arbol,
     [string]$Rom = "$PSScriptRoot\..\dependencias-usuario\Rush 2 - Extreme Racing USA (USA).z64",
     [ValidateSet('todos', 'herramientas', 'recompilar', 'parches', 'libs', 'appx')]
     [string]$Paso = 'todos',

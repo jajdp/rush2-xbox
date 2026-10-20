@@ -95,7 +95,7 @@ que repetir. RT64 compara los modos de *todos* los niveles antes de usar un samp
 for (uint32_t t = 1; (t < callDesc.tileCount) && sameModes; t++) { … }
 ```
 
-En una Xbox Series ese shader con ramas cuesta **~200 s** de creación de tubería, frente a **0,3 s**
+En una Xbox Series X ese shader con ramas cuesta **~200 s** de creación de tubería, frente a **0,3 s**
 el normal. En este juego siete de ellos se comían **1 337 s de los 1 448 s** del arranque.
 Instrumentado para que diga *qué* nivel no cuadra y *en qué campo*, el patrón es siempre el mismo:
 `fmt` y `siz` coinciden en todos y solo cambian `cms`/`cmt` de los altos. Tomando el modo del nivel

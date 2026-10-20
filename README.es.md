@@ -1,10 +1,20 @@
 # Rush 2 en la Xbox — el port UWP
 
-Cómo llevar un juego de la familia **N64Recomp + RT64** a una **Xbox Series en modo desarrollador**,
+Cómo llevar un juego de la familia **N64Recomp + RT64** a una **Xbox Series X en modo desarrollador**,
 usando *Rush 2: Extreme Racing USA* ([`bryantmh/rush2recompiled`](https://github.com/bryantmh/rush2recompiled))
 como caso real.
 
 *(English: [README.md](README.md))*
+
+## En qué consola se probó
+
+**En una Xbox Series X**, en modo desarrollador. Las dos consolas en las que se construyó y se probó esto
+son Series X, así que es el único hardware al que se refiere cualquier cosa que se afirme aquí.
+
+**En una Series S no se ha probado nunca, ni una vez.** Es otra máquina: menos memoria disponible para un
+juego y una GPU más floja. Puede que funcione en una, puede que vaya más despacio, o puede que no
+arranque; nada de aquí se ha medido en ella. Si lo ejecutas en una Series S, lo que obtengas no es lo que
+dice este README, y ninguna de las cifras de aquí es una promesa sobre esa consola.
 
 ## En qué punto está este port
 

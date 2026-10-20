@@ -95,7 +95,7 @@ compares the modes of *every* level before using a native sampler:
 for (uint32_t t = 1; (t < callDesc.tileCount) && sameModes; t++) { … }
 ```
 
-On an Xbox Series that branchy shader costs **~200 s** of pipeline creation, against **0.3 s** for
+On an Xbox Series X that branchy shader costs **~200 s** of pipeline creation, against **0.3 s** for
 the plain one. In this game seven of them ate **1 337 s of a 1 448 s** launch. Instrumented to say
 *which* level disagrees and *in what field*, the pattern is always the same: `fmt` and `siz` match
 everywhere and only `cms`/`cmt` of the higher levels differ. Taking level 0's mode for every level
