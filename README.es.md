@@ -28,15 +28,20 @@ propio juego y desapareció al subir este port a la **v1.0.20**. Medido en una X
 | ⚠ El cielo, casi | **Arreglado aguas arriba**, no aquí: el juego recortaba su domo contra la vista del fotograma *actual*, y su autor lo corrigió el 2026-10-13 (issue #16, commits `47e3465b` y `12262d0f`); este port va sobre la **v1.0.20**. ⚠ Queda un residuo, visto el 2026-10-18: en las curvas cerradas salen unos triángulos claros sin cielo en la **esquina superior izquierda** |
 | ✅ **El tiempo de arranque** | **Resuelto el 2026-10-18**: de 5-6 minutos a **unos 20 s**, con el logo y la barra de progreso en pantalla desde el primer fotograma. Dos causas independientes, las dos contadas en [`docs/HOW-IT-WORKS.es.md`](docs/HOW-IT-WORKS.es.md): los **modos de direccionamiento del mipmap**, que hacían a RT64 generar un shader de ~200 s de creación en vez de 0,3 s, y el primer fotograma **esperando a una tubería del ubershader que ninguna llamada de dibujo usa**. Cachear una tubería sigue siendo imposible aquí —las dos vías de D3D12 matan el dispositivo—, pero resultó no hacer falta |
 | ⚠ El Controller Pak | El juego ve el mando con su accesorio pero nunca abre el pak, así que lo que se guarde en una partida no se lee |
-| ⚠ Las plataformas de aceleración de 2049, **solo en los modos Stunt** | Reportado por el dueño el 2026-10-18: se portan mal en **STUNT** y no en **SINGLE RACE** ni en **CIRCUIT**. La causa **no está decidida**. Aguas arriba queda pendiente la rama de colisión `0x10` de `func_800E1F80` (`docs/rush2049_research/collision.md`), pero esa rama es la que empuja el coche en *cualquier* modo, y el mismo documento cuenta polígonos `0x10` también en pistas de carrera —78 en la pista 2, 3 en la 3, 4 en la 5, más arenas y el circuito de obstáculos—. Si faltara la rama, no empujaría ninguna en ningún sitio, así que eso solo no explica un fallo exclusivo de Stunt. Es el issue #3 |
+| ⚠ Las plataformas de aceleración de 2049 no hacen nada — **en ninguna parte**, no solo en Stunt | **Resuelto el 2026-11-02** leyendo la investigación del propio proyecto, no jugando. Dos cosas, las dos en `docs/rush2049_research/`: la rama `0x10` de `func_800E1F80` **no está portada** (`collision.md` la lista como pendiente), y el **conversor de colisiones borra los bits de info `0x10`/`0x20`** (`movers.md`), así que un archivo convertido no puede ni distinguir una plataforma del asfalto. Parece un fallo exclusivo de Stunt porque las pistas propias de Rush 2 no tienen ni un polígono `0x10` y las de carrera de 2049 tienen poquísimas (78, 3 y 4 en tres de seis), mientras que las arenas están llenas. **Es una característica que este port aún no tiene, no un fallo**, y aguas arriba está el plan de implementación escrito. Es el issue #3 |
 
 **Una línea que estaba aquí era falsa, y conviene decirlo.** Hasta el 2026-10-18 este README
 afirmaba que *el tiempo de arranque es un límite de la consola, no una optimización pendiente*.
 No lo era: era un shader que RT64 no debería haber generado, más una tubería que no usa nadie.
-Las medidas que había detrás eran buenas; la conclusión que se sacó de ellas, no. Lo que sí
-sigue en pie: **las plataformas de aceleración no son culpa de la consola** —la física que
-empujaría el coche es el mismo código en PC—. Aunque de *dónde* fallan también se afirmó más de
-lo que sostenía la evidencia, y eso queda corregido arriba.
+Las medidas que había detrás eran buenas; la conclusión que se sacó de ellas, no.
+
+**Y una segunda, corregida el 2026-11-02.** Este README decía que las plataformas de aceleración
+fallaban *solo en los modos Stunt*, y que la rama `0x10` pendiente no explicaba un fallo
+exclusivo de Stunt. La primera mitad describía con honestidad lo que ve un jugador; la segunda
+razonaba sobre una lectura incompleta de las notas de aguas arriba. No hacen nada en ninguna
+parte —el conversor descarta el bit que marca una plataforma— y en Stunt es simplemente donde
+uno se cruza con una. Lo que sí se sostuvo siempre: **las plataformas no son culpa de la
+consola**, porque la física que empujaría el coche es el mismo código en PC.
 
 ## Qué es este repositorio
 

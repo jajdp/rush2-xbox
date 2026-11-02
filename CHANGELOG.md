@@ -2,6 +2,23 @@
 
 All notable changes to this repository. Dates are `YYYY-MM-DD`.
 
+## [1.2.3] — 2026-11-02
+
+**Documentation only.** Nothing to rebuild, nothing to reinstall.
+
+### Fixed
+
+- **The boost pads: the README was wrong about where they fail, and it is corrected.** It said
+  they misbehave *in Stunt events only*, and argued that the unported `0x10` collision branch
+  could not explain a Stunt-only fault. They do nothing **anywhere**. Upstream's own research
+  says why, in two places: `collision.md` lists the port of `func_800E1F80`'s `0x10` branch as
+  work still to do, and `movers.md` notes that **the collision converter strips info bits
+  `0x10`/`0x20`**, so a converted file cannot tell a boost pad from ordinary road at all.
+- It looks Stunt-only because Rush 2's own tracks have no `0x10` polygons and 2049's race tracks
+  have very few (78, 3 and 4 across three of six), while the stunt arenas are full of them.
+- Restated for what it is: **a feature of 2049's tracks that this port does not have yet**, not
+  a fault, and not the console's. The reasoning is in issue #3.
+
 ## [1.2.2] — 2026-10-20
 
 ### Changed

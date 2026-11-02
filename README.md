@@ -28,15 +28,20 @@ game's own and is gone since this port moved to **v1.0.20**. Measured on an Xbox
 | ⚠ The sky, almost | **Fixed upstream**, not here: the game clipped its sky dome against the *current* frame's view, and its author corrected that on 2026-10-13 (issue #16, commits `47e3465b` and `12262d0f`); this port tracks **v1.0.20**. ⚠ A remnant is left, seen on 2026-10-18: on tight curves a few light triangles with no sky show up in the **top-left corner** |
 | ✅ **Launch time** | **Fixed on 2026-10-18**: 5–6 minutes → **~20 s**, with the logo and the progress bar on screen from the first frame. Two independent causes, both written up in [`docs/HOW-IT-WORKS.md`](docs/HOW-IT-WORKS.md): the **mipmap addressing modes**, which made RT64 emit a shader costing ~200 s to build instead of 0.3 s, and the first frame **waiting for an ubershader pipeline that no draw call ever uses**. Caching a pipeline is still impossible here — both D3D12 ways remove the device — but it turned out not to matter |
 | ⚠ The Controller Pak | The game sees the pad with its accessory but never opens the pak, so whatever a save writes is not read back |
-| ⚠ The 2049 boost pads, **in Stunt events only** | Reported by the owner on 2026-10-18: they misbehave in **STUNT** and not in **SINGLE RACE** or **CIRCUIT**. The cause is **not settled**. Upstream leaves `func_800E1F80`'s `0x10` collision branch for a future runtime patch (`docs/rush2049_research/collision.md`), but that branch is what pushes the car in *any* mode, and the same document counts `0x10` polygons on race tracks as well — 78 on track 2, 3 on track 3, 4 on track 5, plus arenas and the obstacle course. A missing branch would show everywhere, so it does not explain a Stunt-only fault on its own. Tracked as issue #3 |
+| ⚠ The 2049 boost pads do nothing — **anywhere**, not only in Stunt | **Settled on 2026-11-02**, by reading upstream's own research rather than by playing. Two things, both in `docs/rush2049_research/`: `func_800E1F80`'s `0x10` branch is **not ported** (`collision.md` lists it as work to do), and the **collision converter strips info bits `0x10`/`0x20`** (`movers.md`), so a converted file cannot tell a boost pad from ordinary road in the first place. It looks like a Stunt-only fault because Rush 2's own tracks have no `0x10` polygons at all and 2049's race tracks have very few (78, 3 and 4 across three of six), while the arenas are full of them. **It is a feature this port does not have yet, not a fault**, and upstream has the implementation plan written out. Tracked as issue #3 |
 
 **One line that used to be here was wrong, and it is worth saying so.** Until 2026-10-18 this
 README stated that *the launch time is a console limit, not a missing optimisation*. It was
 not: it was a shader RT64 should never have generated, plus a pipeline nobody uses. The
-measurements behind that claim were sound; the conclusion drawn from them was not. What does
-still hold: **the boost pads are not the console's fault** — the physics that would push the
-car is the same code on PC. Where exactly they fail, though, was also stated with more
-confidence than the evidence allowed, and that is corrected above.
+measurements behind that claim were sound; the conclusion drawn from them was not.
+
+**And a second one, corrected on 2026-11-02.** This README said the boost pads misbehaved *in
+Stunt events only*, and that the missing `0x10` branch did not explain a Stunt-only fault. The
+first half was an honest description of what a player sees; the second was reasoning from an
+incomplete reading of upstream's notes. They do nothing anywhere — the converter discards the
+bit that marks a pad — and Stunt is merely where a player meets one. What held all along:
+**the boost pads are not the console's fault**, because the physics that would push the car is
+the same code on PC.
 
 ## What this repository is
 
