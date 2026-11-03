@@ -112,10 +112,10 @@ anything to do with the console being slow.
 ### Fixed
 
 - **`LICENSE`: the explanatory block named the wrong project.** Everything after the MIT text had
-  been copied from the `dkr-xbox` repository and never adapted: it claimed this was a derivative of
-  Golden Balloon, denied granting rights in Diddy Kong Racing, quoted "the 57 lines of the upstream
-  project", and listed `src/` and `package/`, which this repository does not have. It now states
-  what is actually here.
+  been copied from another repository in this catalogue and never adapted: it claimed this was a
+  derivative of a different project altogether, denied granting rights in a game that is not this
+  one, quoted "the 57 lines of the upstream project", and listed `src/` and `package/`, which this
+  repository does not have. It now states what is actually here.
 - **plume was credited to the wrong author.** It is
   [`renderbag/plume`](https://github.com/renderbag/plume) — MIT, Copyright (c) 2024 renderbag and
   contributors — which RT64 uses as a submodule of its own; it is not RT64's code. The one patch
