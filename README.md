@@ -86,6 +86,24 @@ are in his repositories), nor the UWP bundle. Nor the changes the game project i
 
 ## Credits and license
 
+**Almost none of what makes this work is ours.** This repository is a recipe that glues together other people's work; without any one of these pieces there would be no port at all.
+
+| What it does | Who made it | License |
+|---|---|---|
+| **[rush2recompiled](https://github.com/bryantmh/rush2recompiled)** — recompiles *Rush 2* | **bryantmh** | none declared |
+| **[plume](https://github.com/renderbag/plume)** — the low-level rendering interface RT64 uses | **renderbag** | MIT |
+| **[uwp-dep](https://github.com/worleydl/uwp-dep)** — Dawn, SDL3, nod and dxcompiler **built for UWP** — the single reason any of this runs on an Xbox | **Daniel Worley** (worleydl) | libuwp: zlib, © 2025 |
+| **[N64Recomp](https://github.com/N64Recomp/N64Recomp)** — statically recompiles N64 games into native executables | **Mr-Wiseguy** and the N64Recomp project | MIT |
+| **[rt64](https://github.com/rt64/rt64)** — the N64 renderer, with its enhancements | the **RT64** project | MIT |
+| **[N64ModernRuntime](https://github.com/N64Recomp/N64ModernRuntime)** — the runtime those recompilations run on | the **N64Recomp** project | GPL-3.0 |
+| **[RecompFrontend](https://github.com/N64Recomp/RecompFrontend)** — the in-game menus and configuration UI | the **N64Recomp** project | GPL-3.0 |
+| **[SDL](https://github.com/libsdl-org/SDL)** — window, input and audio | **Sam Lantinga** and the SDL contributors | zlib |
+
+Special mention to **Daniel Worley**: the UWP builds in `uwp-dep` are what make an Xbox port of this possible. We did not build them, we used them.
+
+**The packaging recipe, the tooling and this documentation** are by **Recompilaciones**.
+
+
 Recipe and tooling by **Recompilaciones**, under the [MIT](LICENSE) — the license of the one piece
 of third-party code this repository carries a patch against,
 [`renderbag/plume`](https://github.com/renderbag/plume) (the RHI RT64 uses as a submodule), and of
